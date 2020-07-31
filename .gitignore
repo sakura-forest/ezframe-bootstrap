@@ -1,0 +1,13 @@
+TODO.md
+Gemfile.lock
+vendor/
+.bundle/
+node_modules/
+.vscode/
+log/*
+db/*
+**/log/*
+**/db/*
+pkg/
+*.old
+*.gem
