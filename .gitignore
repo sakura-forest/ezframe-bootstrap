@@ -11,3 +11,4 @@ db/*
 pkg/
 *.old
 *.gem
+bin

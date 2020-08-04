@@ -3,25 +3,62 @@ module Ezframe
     class Navbar
       def initialize(opts = {})
         @option = opts
+        @items = []
+        init_var
+      end
+
+      def init_var
         @option[:wrap_tag] ||= "ul.navbar-nav"
         @option[:item_tag] ||= "li.nav-item"
-        @items = []
       end
 
       def add_item(item, opts = {})
-        wrapper_ht = Ht.from_array(@option[:item_tag]) || { tag: :div }
+        wrapper_ht = Ht.from_array(@option[:item_tag]) || opts[:item_tag]) || { tag: :div }
         item_ht = Ht.from_array(item)
-        wrapper_ht[:child] = item_ht
-        Ht.add_class(wrapper_ht, opts[:extra_item_class]) if opts[:extra_item_class]
+        Ht.connect_child(wrapper_ht, item_ht)
+        Ht.add_class(wrapper_ht, opts[:extra_item_class] || @option[:extra_item_class])
         @items.push(wrapper_ht)
         return wrapper_ht
       end
 
+      def add_link(link, opts = {})
+        link_ht = Ht.from_array(link)
+        Ht.add_class(link_ht, "nav-link")
+        Ht.add_class(link_ht, opts[:extra_link_class] || @option[:extra_link_class])
+        add_item(link_ht, opts)
+        return link_ht
+      end
+
       def to_ht
         wrapper_ht = Ht.from_array(@option[:wrap_tag])
+        Ht.connect_child(wrapper_ht, @items)
         Ht.add_class(wrapper_ht, @option[:extra_wrap_class])
-        wrapper_ht[:child] = @items
         return wrapper_ht
+      end
+    end
+
+    class Tab < Navbar
+      def init_var
+        super
+        @option[:wrap_tag] ||= "ul.nav.nav-tabs:role=tablist"
+      end
+
+      def add_link(link, opts = {})
+        link_ht = super(link, opts)
+        link_ht[:role] = "tab"
+        link_ht[:"data-toggle"] = "tab"
+        return link_ht
+      end
+
+      def add_tab(href, tab_name)
+        return add_link("a:href=[#{href}]:#{tab_name}")
+      end
+    end
+
+    class Treeview < Ht::List
+      def init_var
+        @option[:wrap_tag] = "ul.nav.nav-treeview"
+        @option[:item_tag] = "li.nav-item"
       end
     end
 
