@@ -1,23 +1,24 @@
 module Ezframe
   module Bootstrap
-    class Navbar
+    class Nav
       def initialize(opts = {})
         @option = opts
-        @items = []
+        @item_a = []
         init_var
       end
 
       def init_var
-        @option[:wrap_tag] ||= "ul.navbar-nav"
+        @option[:wrap_tag] ||= "ul.nav"
         @option[:item_tag] ||= "li.nav-item"
       end
 
       def add_item(item, opts = {})
-        wrapper_ht = Ht.from_array(@option[:item_tag]) || opts[:item_tag]) || { tag: :div }
+        wrapper_ht = Ht.from_array(@option[:item_tag] || opts[:item_tag]) || { tag: :div }
         item_ht = Ht.from_array(item)
+        puts "item=#{item}"
         Ht.connect_child(wrapper_ht, item_ht)
         Ht.add_class(wrapper_ht, opts[:extra_item_class] || @option[:extra_item_class])
-        @items.push(wrapper_ht)
+        @item_a.push(wrapper_ht)
         return wrapper_ht
       end
 
@@ -31,16 +32,23 @@ module Ezframe
 
       def to_ht
         wrapper_ht = Ht.from_array(@option[:wrap_tag])
-        Ht.connect_child(wrapper_ht, @items)
+        Ht.connect_child(wrapper_ht, @item_a)
         Ht.add_class(wrapper_ht, @option[:extra_wrap_class])
         return wrapper_ht
       end
     end
 
-    class Tab < Navbar
+    class Navbar < Nav
       def init_var
         super
-        @option[:wrap_tag] ||= "ul.nav.nav-tabs:role=tablist"
+        @option[:wrap_tag] ||= "ul.nav.nav-bar"
+      end
+    end
+
+    class Tab < Nav
+      def init_var
+        super
+        @option[:wrap_tag] = "ul.nav.nav-tabs:role=tablist"
       end
 
       def add_link(link, opts = {})
@@ -51,7 +59,9 @@ module Ezframe
       end
 
       def add_tab(href, tab_name)
-        return add_link("a:href=[#{href}]:#{tab_name}")
+        ht = add_link("a:href=[#{href}]:#{tab_name}")
+        puts "a:href=[#{href}]:#{tab_name}:ht=#{ht}"
+        return ht
       end
     end
 
@@ -59,6 +69,26 @@ module Ezframe
       def init_var
         @option[:wrap_tag] = "ul.nav.nav-treeview"
         @option[:item_tag] = "li.nav-item"
+      end
+    end
+
+    class Dropdown < Ht::List
+      def init_var
+        @option[:wrap_tag] = ".dropdown"
+      end
+
+      def add_item(item, opts = {})
+        ht = Ht.from_array(item)
+        Ht.add_class(ht, @option[:extra_item_class] || opts[:extra_item_class])
+        @item_a.push(ht)
+        return ht
+      end
+
+      def to_ht
+        wrapper_ht = Ht.from_array(@option[:wrap_tag])
+        Ht.connect_child(wrapper_ht, @item_a)
+        Ht.add_class(wrapper_ht, @option[:extra_wrap_class])
+        return wrapper_ht
       end
     end
 

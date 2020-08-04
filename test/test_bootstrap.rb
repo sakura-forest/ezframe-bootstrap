@@ -12,7 +12,7 @@ class TestBootstrap < MiniTest::Test
     navbar.add_item("a:nav-link:href=[http://www.asahi.com]:asahi.com")
     navbar.add_item("a:nav-link:href=[http://www.google.com]:Google")
     ht = navbar.to_ht
-    p ht
+    puts "navbar: #{ht}"
   end
 
   def test_tabs
@@ -23,7 +23,19 @@ class TestBootstrap < MiniTest::Test
     tab.add_tab("#tab3", "third tab")
 
     ht = tab.to_ht
-    p ht
-    # Ht.search(ht, "nav > ")
+    p "tabs: #{ht}"
+    assert_equal(:ul, ht[:tag])
+    child = ht[:child]
+    assert_equal(Array, child.class)
+    assert_equal(3, child.length)
+  end
+
+  def test_dropdown
+    menu = Bootstrap::Dropdown.new
+    menu.add_item("a:href=[#1]:link1")
+    menu.add_item("a:href=[#2]:link2")
+    menu.add_item("a:href=[#3]:link2")
+    ht = menu.to_ht
+    puts "dropdown: #{ht}"
   end
 end
