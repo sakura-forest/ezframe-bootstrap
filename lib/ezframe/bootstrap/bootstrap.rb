@@ -15,7 +15,7 @@ module Ezframe
       def add_item(item, opts = {})
         wrapper_ht = Ht.from_array(@option[:item_tag] || opts[:item_tag]) || { tag: :div }
         item_ht = Ht.from_array(item)
-        puts "item=#{item}"
+        # puts "item=#{item}"
         Ht.connect_child(wrapper_ht, item_ht)
         Ht.add_class(wrapper_ht, opts[:extra_item_class] || @option[:extra_item_class])
         @item_a.push(wrapper_ht)
@@ -45,6 +45,14 @@ module Ezframe
       end
     end
 
+    class Sidebar < Nav
+      def init_var
+        super
+        @option[:wrap_tag] = ".sidebar.sidebar-mini > ul.nav.nav-sidebar.flex-column:data-widget=[treeview]:role=[menu]"
+        @option[:item_tag] = nil
+      end
+    end
+
     class Tab < Nav
       def init_var
         super
@@ -62,6 +70,14 @@ module Ezframe
         ht = add_link("a:href=[#{href}]:#{tab_name}")
         puts "a:href=[#{href}]:#{tab_name}:ht=#{ht}"
         return ht
+      end
+    end
+
+    class TabContent < Ht::List
+      def init_var
+        super
+        @option[:wrap_tag] = ".tab-content"
+        @option[:item_tag] = ".tab-pane"
       end
     end
 
@@ -93,7 +109,7 @@ module Ezframe
     end
 
     class Form
-      def initialize(opts)
+      def initialize(opts = {})
         @option = opts
         @form_group_a = []
       end
@@ -129,7 +145,8 @@ module Ezframe
       end
 
       def to_ht
-        form = Ht.form(@option)
+        form = Ht.form
+        Ht.add_class(form, @option[:extra_wrap_class])
         form[:child] = @form_group_a.map do |grp|
           if grp.respond_to?(:to_ht)
             grp.to_ht
