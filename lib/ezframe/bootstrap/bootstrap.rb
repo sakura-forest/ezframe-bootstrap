@@ -109,6 +109,8 @@ module Ezframe
     end
 
     class Form
+      attr_accessor :action, :method, :append, :prepend
+
       def initialize(opts = {})
         @option = opts
         @form_group_a = []
@@ -130,7 +132,7 @@ module Ezframe
         label = opts[:label]
         if label
           label_ht = Ht.label(label)
-          label_ht = Ht.add_class(label_ht, @label_class) if @label_class
+          label_ht = Ht.add_class(label_ht, label_class) if label_class
           inpgrp.add_item(label_ht)
         end
         @form_group_a.push(inpgrp)
@@ -145,15 +147,20 @@ module Ezframe
       end
 
       def to_ht
-        form = Ht.form
+        form = Ht.form(class: %w[form-inline])
+        form[:action] = @action
+        form[:method] = @method || "POST"
         Ht.add_class(form, @option[:extra_wrap_class])
-        form[:child] = @form_group_a.map do |grp|
+        children = @form_group_a.map do |grp|
           if grp.respond_to?(:to_ht)
             grp.to_ht
           else
             grp
           end
         end
+        children.unshift(@prepend) if @prepend
+        children.push(@append) if @append
+        form[:child] = children
         return form
       end
 
@@ -166,11 +173,12 @@ module Ezframe
           return self
         end
 
-        def add_item(item)
-          @input_a.push(item)
+        def add_item(item, opts = {})
+          ht = Ht.from_array(item)
+          @input_a.push(ht)
         end
 
-        def add_prepend(opts = {})
+        def add_prepend(item, opts = {}) 
           ht = Ht.from_array(item)
           @prepend ||= []
           @prepend.push(ht)
