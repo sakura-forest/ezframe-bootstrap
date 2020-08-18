@@ -131,6 +131,7 @@ module Ezframe
         inpgrp.add_item(input)
         label = opts[:label]
         if label
+          EzLog.debug("has label: #{label}")
           label_ht = Ht.label(label)
           label_ht = Ht.add_class(label_ht, label_class) if label_class
           inpgrp.add_item(label_ht)
@@ -147,7 +148,7 @@ module Ezframe
       end
 
       def to_ht
-        form = Ht.form(class: %w[form-inline])
+        form = Ht.form # (class: %w[form-holizontal])
         form[:action] = @action
         form[:method] = @method || "POST"
         Ht.add_class(form, @option[:extra_wrap_class])
@@ -204,6 +205,14 @@ module Ezframe
           ht = Ht.div(class: klass)
           ht[:child] = @input_a
           return ht
+        end
+      end
+
+      class FormGroup < Ht::List
+        def init_var
+          super
+          @option[:wrap_tag] ||= ".form-group"
+          @option[:item_tag] ||= nil
         end
       end
     end
