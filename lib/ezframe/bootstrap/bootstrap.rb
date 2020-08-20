@@ -117,6 +117,7 @@ module Ezframe
       end
 
       def add_input(input, opts = {})
+        input = Ht.from_array(input) if input.is_a?(String)
         case input[:tag]
         when :input, :textarea, :select
           Ht.add_class(input, "form-control")
