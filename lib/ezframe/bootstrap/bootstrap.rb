@@ -18,8 +18,12 @@ module Ezframe
         # puts "item=#{item}"
         Ht.connect_child(wrapper_ht, item_ht)
         Ht.add_class(wrapper_ht, opts[:extra_item_class] || @option[:extra_item_class])
-        @item_a.push(wrapper_ht)
+        self.add_raw(wrapper_ht)
         return wrapper_ht
+      end
+
+      def add_raw(item)
+        @item_a.push(item)
       end
 
       def add_link(link, opts = {})
@@ -68,7 +72,7 @@ module Ezframe
 
       def add_tab(href, tab_name)
         ht = add_link("a:href=[#{href}]:#{tab_name}")
-        puts "a:href=[#{href}]:#{tab_name}:ht=#{ht}"
+        # puts "a:href=[#{href}]:#{tab_name}:ht=#{ht}"
         return ht
       end
     end
@@ -78,6 +82,10 @@ module Ezframe
         super
         @option[:wrap_tag] = ".tab-content"
         @option[:item_tag] = ".tab-pane"
+      end
+
+      def add_tab(tab_id, content)
+        @item_a.push(Ht.from_array([ ".tab-pane##{tab_id}", [ content ] ]))
       end
     end
 
@@ -241,18 +249,21 @@ module Ezframe
       end
 
       def to_ht
-        stash = { at_first: @at_first.clone, at_last: @at_last.clone }
-        @at_first.push(Ht.from_array("h5.card-title:#{@title}")) if @title
+        stash = { prepend: @prepend.clone, append: @append.clone }
+        if @title
+          @prepend ||= []
+          @prepend.push(Ht.from_array("h5.card-title:#{@title}")) 
+        end
         if @link_a
           links = @link_a.map do |lk|
             h = Ht.from_array(lk)
-            Ht.add_class(h, "card-link")
+            Ht.add_class(h, "card-link") if h[:tag] == :a
             h
           end
-          @at_last = links
+          @append = links
         end
         ht = super
-        @at_first, @at_last = stash[:at_first], stash[:at_last]
+        @prepend, @append = stash[:prepend], stash[:append]
         if @header
           card = Ht.search(ht, ".card")
           card[:child] = [Ht.from_array([".card-header", [@header]]), card[:child]]
