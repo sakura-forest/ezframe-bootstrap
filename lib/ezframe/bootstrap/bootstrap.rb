@@ -70,9 +70,11 @@ module Ezframe
         return link_ht
       end
 
-      def add_tab(href, tab_name)
+      def add_tab(href, tab_name, opts = {})
         ht = add_link("a:href=[#{href}]:#{tab_name}")
-        # puts "a:href=[#{href}]:#{tab_name}:ht=#{ht}"
+        Ht.add_class(ht, opts[:add_class]) if opts[:add_class]
+        opts.delete(:add_class)
+        ht.update(opts)
         return ht
       end
     end
@@ -80,12 +82,15 @@ module Ezframe
     class TabContent < Ht::List
       def init_var
         super
-        @option[:wrap_tag] = ".tab-content"
-        @option[:item_tag] = ".tab-pane"
+        @option[:wrap_tag] ||= ".tab-content"
+        @option[:item_tag] ||= ".tab-pane"
       end
 
-      def add_tab(tab_id, content)
-        @item_a.push(Ht.from_array([ ".tab-pane##{tab_id}", [ content ] ]))
+      def add_tab(tab_id, content, opts = {})
+        ht = Ht.from_array([ ".tab-pane##{tab_id}", [ content ] ])
+        Ht.add_class(ht, opts[:add_class])
+        @item_a.push(ht)
+        return ht
       end
     end
 
@@ -121,11 +126,13 @@ module Ezframe
 
       def initialize(opts = {})
         @option = opts
+        @option[:wrap_tag] ||= "form:method=post"
         @form_group_a = []
       end
 
       def add_input(input, opts = {})
         input = Ht.from_array(input) if input.is_a?(String)
+        label_class = nil
         case input[:tag]
         when :input, :textarea, :select
           Ht.add_class(input, "form-control")
@@ -140,10 +147,14 @@ module Ezframe
         inpgrp.add_item(input)
         label = opts[:label]
         if label
-          EzLog.debug("has label: #{label}")
-          label_ht = Ht.label(label)
-          label_ht = Ht.add_class(label_ht, label_class) if label_class
-          inpgrp.add_item(label_ht)
+          # EzLog.debug("has label: #{label}")
+          if @use_label_tag
+            label_ht = Ht.label(label)
+            Ht.add_class(label_ht, label_class) if label_class
+            inpgrp.add_prepend(label_ht)
+          else
+            inpgrp.add_prepend("span.input-group-text:#{label}")
+          end
         end
         @form_group_a.push(inpgrp)
         return inpgrp
@@ -157,9 +168,9 @@ module Ezframe
       end
 
       def to_ht
-        form = Ht.form # (class: %w[form-holizontal])
-        form[:action] = @action
-        form[:method] = @method || "POST"
+        form = Ht.from_array(@option[:wrap_tag])
+        # form[:action] = @action
+        # form[:method] = @method || "POST"
         Ht.add_class(form, @option[:extra_wrap_class])
         children = @form_group_a.map do |grp|
           if grp.respond_to?(:to_ht)
@@ -170,7 +181,7 @@ module Ezframe
         end
         children.unshift(@prepend) if @prepend
         children.push(@append) if @append
-        form[:child] = children
+        Ht.connect_child(form, children)
         return form
       end
 
