@@ -13,8 +13,8 @@ module Ezframe
       end
 
       def add_item(item, opts = {})
-        wrapper_ht = Ht.from_array(@option[:item_tag] || opts[:item_tag]) || { tag: :div }
-        item_ht = Ht.from_array(item)
+        wrapper_ht = Ht.compact(@option[:item_tag] || opts[:item_tag]) || Ht.div()
+        item_ht = Ht.compact(item)
         # puts "item=#{item}"
         Ht.connect_child(wrapper_ht, item_ht)
         Ht.add_class(wrapper_ht, opts[:extra_item_class] || @option[:extra_item_class])
@@ -27,7 +27,7 @@ module Ezframe
       end
 
       def add_link(link, opts = {})
-        link_ht = Ht.from_array(link)
+        link_ht = Ht.compact(link)
         Ht.add_class(link_ht, "nav-link")
         Ht.add_class(link_ht, opts[:extra_link_class] || @option[:extra_link_class])
         add_item(link_ht, opts)
@@ -35,7 +35,7 @@ module Ezframe
       end
 
       def to_ht
-        wrapper_ht = Ht.from_array(@option[:wrap_tag])
+        wrapper_ht = Ht.compact(@option[:wrap_tag])
         Ht.connect_child(wrapper_ht, @item_a)
         Ht.add_class(wrapper_ht, @option[:extra_wrap_class])
         return wrapper_ht
@@ -52,7 +52,7 @@ module Ezframe
     class Sidebar < Nav
       def init_var
         super
-        @option[:wrap_tag] = ".sidebar.sidebar-mini > ul.nav.nav-sidebar.flex-column:data-widget=[treeview]:role=[menu]"
+        @option[:wrap_tag] = Ht.compact(".sidebar.sidebar-mini > ul.nav.nav-sidebar.flex-column:data-widget=[treeview]:role=[menu]")
         @option[:item_tag] = nil
       end
     end
@@ -60,7 +60,7 @@ module Ezframe
     class Tab < Nav
       def init_var
         super
-        @option[:wrap_tag] = "ul.nav.nav-tabs:role=tablist"
+        @option[:wrap_tag] = Ht.compact("ul.nav.nav-tabs:role=tablist")
       end
 
       def add_link(link, opts = {})
@@ -71,7 +71,7 @@ module Ezframe
       end
 
       def add_tab(href, tab_name, opts = {})
-        ht = add_link("a:href=[#{href}]:#{tab_name}")
+        ht = add_link(Ht.compact("a:href=[#{href}]:#{tab_name}"))
         Ht.add_class(ht, opts[:add_class]) if opts[:add_class]
         opts.delete(:add_class)
         ht.update(opts)
@@ -82,12 +82,12 @@ module Ezframe
     class TabContent < Ht::List
       def init_var
         super
-        @option[:wrap_tag] ||= ".tab-content"
-        @option[:item_tag] ||= ".tab-pane"
+        @option[:wrap_tag] ||= Ht.compact(".tab-content")
+        @option[:item_tag] ||= Ht.compact(".tab-pane")
       end
 
       def add_tab(tab_id, content, opts = {})
-        ht = Ht.from_array([ ".tab-pane##{tab_id}", [ content ] ])
+        ht = Ht.compact(".tab-pane##{tab_id}", [ content ])
         Ht.add_class(ht, opts[:add_class])
         @item_a.push(ht)
         return ht
@@ -96,25 +96,25 @@ module Ezframe
 
     class Treeview < Ht::List
       def init_var
-        @option[:wrap_tag] = "ul.nav.nav-treeview"
-        @option[:item_tag] = "li.nav-item"
+        @option[:wrap_tag] = Ht.compact("ul.nav.nav-treeview")
+        @option[:item_tag] = Ht.compact("li.nav-item")
       end
     end
 
     class Dropdown < Ht::List
       def init_var
-        @option[:wrap_tag] = ".dropdown"
+        @option[:wrap_tag] = Ht.compact(".dropdown")
       end
 
       def add_item(item, opts = {})
-        ht = Ht.from_array(item)
+        ht = Ht.compact(item)
         Ht.add_class(ht, @option[:extra_item_class] || opts[:extra_item_class])
         @item_a.push(ht)
         return ht
       end
 
       def to_ht
-        wrapper_ht = Ht.from_array(@option[:wrap_tag])
+        wrapper_ht = Ht.compact(@option[:wrap_tag])
         Ht.connect_child(wrapper_ht, @item_a)
         Ht.add_class(wrapper_ht, @option[:extra_wrap_class])
         return wrapper_ht
@@ -126,12 +126,12 @@ module Ezframe
 
       def initialize(opts = {})
         @option = opts
-        @option[:wrap_tag] ||= "form:method=post"
+        @option[:wrap_tag] ||= Ht.compact("form:method=post")
         @form_group_a = []
       end
 
       def add_input(input, opts = {})
-        input = Ht.from_array(input) if input.is_a?(String)
+        input = Ht.compact(input) if input.is_a?(String)
         label_class = nil
         case input[:tag]
         when :input, :textarea, :select
@@ -153,7 +153,7 @@ module Ezframe
             Ht.add_class(label_ht, label_class) if label_class
             inpgrp.add_prepend(label_ht)
           else
-            inpgrp.add_prepend("span.input-group-text:#{label}")
+            inpgrp.add_prepend(Ht.compact("span.input-group-text:#{label}"))
           end
         end
         @form_group_a.push(inpgrp)
@@ -168,7 +168,7 @@ module Ezframe
       end
 
       def to_ht
-        form = Ht.from_array(@option[:wrap_tag])
+        form = Ht.compact(@option[:wrap_tag])
         # form[:action] = @action
         # form[:method] = @method || "POST"
         Ht.add_class(form, @option[:extra_wrap_class])
@@ -195,19 +195,19 @@ module Ezframe
         end
 
         def add_item(item, opts = {})
-          ht = Ht.from_array(item)
+          ht = Ht.compact(item)
           @input_a.push(ht)
         end
 
         def add_prepend(item, opts = {}) 
-          ht = Ht.from_array(item)
+          ht = Ht.compact(item)
           @prepend ||= []
           @prepend.push(ht)
           return @prepend
         end
 
         def add_append(item, opts = {})
-          ht = Ht.from_array(item)
+          ht = Ht.compact(item)
           @append ||= []
           @append.push(ht)
           return @append
@@ -231,7 +231,7 @@ module Ezframe
       class FormGroup < Ht::List
         def init_var
           super
-          @option[:wrap_tag] ||= ".form-group"
+          @option[:wrap_tag] ||= Ht.compact(".form-group")
           @option[:item_tag] ||= nil
         end
       end
@@ -240,8 +240,8 @@ module Ezframe
     class Breadcrumb < Ht::List
       def initialize(opts = {})
         super(opts)
-        @option[:wrap_tag] ||= "ol.breadcrumb"
-        @option[:item_tag] ||= "li.breadcrumb-item"
+        @option[:wrap_tag] ||= Ht.compact("ol.breadcrumb")
+        @option[:item_tag] ||= Ht.compact("li.breadcrumb-item")
       end
     end
 
@@ -250,8 +250,8 @@ module Ezframe
 
       def initialize(opts = {})
         super(opts)
-        @option[:wrap_tag] = ".card > .card-body"
-        @option[:item_tag] = "p.card-text"
+        @option[:wrap_tag] = Ht.compact(".card > .card-body")
+        @option[:item_tag] = Ht.compact("p.card-text")
       end
 
       def add_link(link)
@@ -263,11 +263,11 @@ module Ezframe
         stash = { prepend: @prepend.clone, append: @append.clone }
         if @title
           @prepend ||= []
-          @prepend.push(Ht.from_array("h5.card-title:#{@title}")) 
+          @prepend.push(Ht.compact("h5.card-title:#{@title}")) 
         end
         if @link_a
           links = @link_a.map do |lk|
-            h = Ht.from_array(lk)
+            h = Ht.compact(lk)
             Ht.add_class(h, "card-link") if h[:tag] == :a
             h
           end
@@ -277,7 +277,7 @@ module Ezframe
         @prepend, @append = stash[:prepend], stash[:append]
         if @header
           card = Ht.search(ht, ".card")
-          card[:child] = [Ht.from_array([".card-header", [@header]]), card[:child]]
+          card[:child].unshift(Ht.compact(".card-header", [@header]))
         end
         return ht
       end
