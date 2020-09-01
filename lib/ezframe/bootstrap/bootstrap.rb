@@ -72,9 +72,9 @@ module Ezframe
 
       def add_tab(href, tab_name, opts = {})
         ht = add_link(Ht.compact("a:href=[#{href}]:#{tab_name}"))
-        Ht.add_class(ht, opts[:add_class]) if opts[:add_class]
-        opts.delete(:add_class)
-        ht.update(opts)
+        Ht.add_class(ht, opts[:add_class])
+        #opts.delete(:add_class)
+        # ht.update(opts)
         return ht
       end
     end
@@ -88,6 +88,7 @@ module Ezframe
 
       def add_tab(tab_id, content, opts = {})
         ht = Ht.compact(".tab-pane##{tab_id}", [ content ])
+        EzLog.debug("TabContent: opts=#{opts}, ht=#{ht}")
         Ht.add_class(ht, opts[:add_class])
         @item_a.push(ht)
         return ht
@@ -280,6 +281,35 @@ module Ezframe
           card[:child].unshift(Ht.compact(".card-header", [@header]))
         end
         return ht
+      end
+    end
+
+    class CardTab
+      def initialize
+        @tab_a = []
+        @content_a = []
+      end
+
+      def add_tab(id, name, content)
+        data = { id: id, name: name, content: content}
+        @tab_a.push(data)
+      end
+
+      def to_ht
+        @tab_a[0][:active] = ".active"
+        tab_list = @tab_a.map do |data| 
+          "li.nav-item > a.nav-link#{data[:active]}:data-toggle=[pill]:href=#[#{data[:id]}]:#{data[:name]}"
+        end
+        tab_content = []
+        @tab_a.each do |data|
+          content = data[:content]
+          content = [ content ] unless content.is_a?(Array)
+          tab_content += ["##{data[:id]}.tab-pane#{data[:active]}", content ]
+        end
+        return Ht.compact(".card.card-primary.card-outline.card-tabs", [ 
+          ".card-header > ul.nav.nav-tabs:role=[tablist]", tab_list,
+          ".card-body > .tab-content", tab_content
+        ])
       end
     end
   end
