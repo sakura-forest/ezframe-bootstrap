@@ -42,10 +42,11 @@ module Ezframe
       end
     end
 
-    class Navbar < Nav
+    class NavbarContent < Nav
       def init_var
         super
-        @option[:wrap_tag] ||= "ul.nav.nav-bar"
+        @option[:wrap_tag] = "ul.navbar-nav.mr-auto"
+        # @option[:left_part_tag] = "nav.navbar.navbar-expand-lg.navbar-light"
       end
     end
 
@@ -132,6 +133,7 @@ module Ezframe
       end
 
       def add_input(input, opts = {})
+        return nil if input.nil?
         input = Ht.compact(input) if input.is_a?(String)
         label_class = nil
         case input[:tag]
